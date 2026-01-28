@@ -32,6 +32,30 @@
                     </label>
 
                     <label class="flex items-center gap-3">
+                        <input type="checkbox" class="tp-checkbox" name="include_posts" value="1" checked />
+                        <span class="text-sm">
+                            <span class="font-semibold">Include posts</span>
+                            <span class="tp-muted mt-1 block text-xs">
+                                Exports rows from
+                                <code class="tp-code">tp_posts</code>
+                                .
+                            </span>
+                        </span>
+                    </label>
+
+                    <label class="flex items-center gap-3">
+                        <input type="checkbox" class="tp-checkbox" name="include_media" value="1" checked />
+                        <span class="text-sm">
+                            <span class="font-semibold">Include media</span>
+                            <span class="tp-muted mt-1 block text-xs">
+                                Exports rows from
+                                <code class="tp-code">tp_media</code>
+                                (metadata only).
+                            </span>
+                        </span>
+                    </label>
+
+                    <label class="flex items-center gap-3">
                         <input type="checkbox" class="tp-checkbox" name="include_theme" value="1" checked />
                         <span class="text-sm">
                             <span class="font-semibold">Include theme metadata</span>
@@ -58,6 +82,8 @@
                             <span class="tp-muted mt-1 block text-xs">
                                 Exports
                                 <code class="tp-code">tp_seo_pages</code>
+                                and
+                                <code class="tp-code">tp_seo_posts</code>
                                 if present. Safe to leave on.
                             </span>
                         </span>
@@ -80,6 +106,14 @@
                 <ul class="mt-2 list-disc space-y-1 pl-5">
                     <li><code class="tp-code">manifest.json</code></li>
                     <li><code class="tp-code">pages.json</code></li>
+                    <li>
+                        <code class="tp-code">posts.json</code>
+                        (optional)
+                    </li>
+                    <li>
+                        <code class="tp-code">media.json</code>
+                        (optional)
+                    </li>
                     <li>
                         <code class="tp-code">settings.json</code>
                         (optional)

@@ -17,6 +17,8 @@ final class RunController
             'include_theme' => ['nullable', 'boolean'],
             'include_plugins' => ['nullable', 'boolean'],
             'include_seo' => ['nullable', 'boolean'],
+            'include_posts' => ['nullable', 'boolean'],
+            'include_media' => ['nullable', 'boolean'],
         ]);
 
         $options = [
@@ -24,6 +26,8 @@ final class RunController
             'include_theme' => (bool) ($data['include_theme'] ?? true),
             'include_plugins' => (bool) ($data['include_plugins'] ?? true),
             'include_seo' => (bool) ($data['include_seo'] ?? true),
+            'include_posts' => (bool) ($data['include_posts'] ?? true),
+            'include_media' => (bool) ($data['include_media'] ?? true),
         ];
 
         $result = $exporter->createExportZip($options);

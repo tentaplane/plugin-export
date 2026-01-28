@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace TentaPress\Export\Services;
 
-use TentaPress\Pages\Models\TpPage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use TentaPress\Media\Models\TpMedia;
+use TentaPress\Pages\Models\TpPage;
+use TentaPress\Posts\Models\TpPost;
 use TentaPress\System\Plugin\PluginManager;
 use TentaPress\System\Support\Paths;
 use TentaPress\System\Theme\ThemeManager;
@@ -20,7 +22,9 @@ final class Exporter
      *   include_settings?:bool,
      *   include_theme?:bool,
      *   include_plugins?:bool,
-     *   include_seo?:bool
+     *   include_seo?:bool,
+     *   include_posts?:bool,
+     *   include_media?:bool
      * } $options
      *
      * @return array{path:string, filename:string}
@@ -31,6 +35,8 @@ final class Exporter
         $includeTheme = (bool) ($options['include_theme'] ?? true);
         $includePlugins = (bool) ($options['include_plugins'] ?? true);
         $includeSeo = (bool) ($options['include_seo'] ?? true);
+        $includePosts = (bool) ($options['include_posts'] ?? true);
+        $includeMedia = (bool) ($options['include_media'] ?? true);
 
         $timestamp = gmdate('Ymd-His');
         $filename = "tentapress-export-{$timestamp}.zip";
@@ -53,6 +59,8 @@ final class Exporter
             ],
             'includes' => [
                 'pages' => true,
+                'posts' => $includePosts,
+                'media' => $includeMedia,
                 'settings' => $includeSettings,
                 'theme' => $includeTheme,
                 'plugins' => $includePlugins,
@@ -63,6 +71,16 @@ final class Exporter
         // Always export pages
         $pages = $this->exportPages();
         $zip->addFromString('pages.json', $this->json($pages));
+
+        if ($includePosts) {
+            $posts = $this->exportPosts();
+            $zip->addFromString('posts.json', $this->json($posts));
+        }
+
+        if ($includeMedia) {
+            $media = $this->exportMedia();
+            $zip->addFromString('media.json', $this->json($media));
+        }
 
         if ($includeSettings) {
             $settings = $this->exportSettings();
@@ -102,7 +120,7 @@ final class Exporter
      */
     private function exportPages(): array
     {
-        if (!class_exists(TpPage::class)) {
+        if (! class_exists(TpPage::class)) {
             return [
                 'error' => 'Pages plugin not installed.',
                 'items' => [],
@@ -141,6 +159,121 @@ final class Exporter
             }
 
             $items[] = $item;
+        }
+
+        return [
+            'count' => count($items),
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function exportPosts(): array
+    {
+        if (! class_exists(TpPost::class)) {
+            return [
+                'error' => 'Posts plugin not installed.',
+                'items' => [],
+            ];
+        }
+
+        if (! Schema::hasTable('tp_posts')) {
+            return [
+                'error' => 'Posts table tp_posts not found.',
+                'items' => [],
+            ];
+        }
+
+        $postModel = TpPost::class;
+
+        $hasStatus = Schema::hasColumn('tp_posts', 'status');
+        $hasLayout = Schema::hasColumn('tp_posts', 'layout');
+        $hasBlocks = Schema::hasColumn('tp_posts', 'blocks');
+        $hasPublishedAt = Schema::hasColumn('tp_posts', 'published_at');
+
+        $rows = $postModel::query()->orderBy('id')->get();
+
+        $items = [];
+        foreach ($rows as $p) {
+            $item = [
+                'id' => (int) $p->id,
+                'title' => (string) ($p->title ?? ''),
+                'slug' => (string) ($p->slug ?? ''),
+                'created_at' => isset($p->created_at) ? (string) $p->created_at : null,
+                'updated_at' => isset($p->updated_at) ? (string) $p->updated_at : null,
+                'author_id' => isset($p->author_id) ? (int) $p->author_id : null,
+            ];
+
+            if ($hasStatus) {
+                $item['status'] = (string) ($p->status ?? '');
+            }
+
+            if ($hasLayout) {
+                $item['layout'] = (string) ($p->layout ?? '');
+            }
+
+            if ($hasBlocks) {
+                $blocks = $p->blocks;
+                $item['blocks'] = is_array($blocks) ? $blocks : [];
+            }
+
+            if ($hasPublishedAt) {
+                $item['published_at'] = isset($p->published_at) ? (string) $p->published_at : null;
+            }
+
+            $items[] = $item;
+        }
+
+        return [
+            'count' => count($items),
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function exportMedia(): array
+    {
+        if (! class_exists(TpMedia::class)) {
+            return [
+                'error' => 'Media plugin not installed.',
+                'items' => [],
+            ];
+        }
+
+        if (! Schema::hasTable('tp_media')) {
+            return [
+                'error' => 'Media table tp_media not found.',
+                'items' => [],
+            ];
+        }
+
+        $mediaModel = TpMedia::class;
+
+        $rows = $mediaModel::query()->orderBy('id')->get();
+
+        $items = [];
+        foreach ($rows as $m) {
+            $items[] = [
+                'id' => (int) $m->id,
+                'title' => isset($m->title) ? (string) $m->title : null,
+                'alt_text' => isset($m->alt_text) ? (string) $m->alt_text : null,
+                'caption' => isset($m->caption) ? (string) $m->caption : null,
+                'disk' => (string) ($m->disk ?? 'public'),
+                'path' => (string) ($m->path ?? ''),
+                'original_name' => isset($m->original_name) ? (string) $m->original_name : null,
+                'mime_type' => isset($m->mime_type) ? (string) $m->mime_type : null,
+                'size' => isset($m->size) ? (int) $m->size : null,
+                'width' => isset($m->width) ? (int) $m->width : null,
+                'height' => isset($m->height) ? (int) $m->height : null,
+                'created_by' => isset($m->created_by) ? (int) $m->created_by : null,
+                'updated_by' => isset($m->updated_by) ? (int) $m->updated_by : null,
+                'created_at' => isset($m->created_at) ? (string) $m->created_at : null,
+                'updated_at' => isset($m->updated_at) ? (string) $m->updated_at : null,
+            ];
         }
 
         return [
@@ -275,32 +408,63 @@ final class Exporter
      */
     private function exportSeo(): ?array
     {
-        if (!Schema::hasTable('tp_seo_pages')) {
+        $hasPages = Schema::hasTable('tp_seo_pages');
+        $hasPosts = Schema::hasTable('tp_seo_posts');
+
+        if (! $hasPages && ! $hasPosts) {
             return null;
         }
 
-        $rows = DB::table('tp_seo_pages')->orderBy('page_id')->get();
+        $pages = [];
+        $posts = [];
 
-        $items = [];
-        foreach ($rows as $r) {
-            $items[] = [
-                'page_id' => (int) ($r->page_id ?? 0),
-                'title' => isset($r->title) ? (string) $r->title : null,
-                'description' => isset($r->description) ? (string) $r->description : null,
-                'canonical_url' => isset($r->canonical_url) ? (string) $r->canonical_url : null,
-                'robots' => isset($r->robots) ? (string) $r->robots : null,
-                'og_title' => isset($r->og_title) ? (string) $r->og_title : null,
-                'og_description' => isset($r->og_description) ? (string) $r->og_description : null,
-                'og_image' => isset($r->og_image) ? (string) $r->og_image : null,
-                'twitter_title' => isset($r->twitter_title) ? (string) $r->twitter_title : null,
-                'twitter_description' => isset($r->twitter_description) ? (string) $r->twitter_description : null,
-                'twitter_image' => isset($r->twitter_image) ? (string) $r->twitter_image : null,
-            ];
+        if ($hasPages) {
+            $rows = DB::table('tp_seo_pages')->orderBy('page_id')->get();
+            foreach ($rows as $r) {
+                $pages[] = [
+                    'page_id' => (int) ($r->page_id ?? 0),
+                    'title' => isset($r->title) ? (string) $r->title : null,
+                    'description' => isset($r->description) ? (string) $r->description : null,
+                    'canonical_url' => isset($r->canonical_url) ? (string) $r->canonical_url : null,
+                    'robots' => isset($r->robots) ? (string) $r->robots : null,
+                    'og_title' => isset($r->og_title) ? (string) $r->og_title : null,
+                    'og_description' => isset($r->og_description) ? (string) $r->og_description : null,
+                    'og_image' => isset($r->og_image) ? (string) $r->og_image : null,
+                    'twitter_title' => isset($r->twitter_title) ? (string) $r->twitter_title : null,
+                    'twitter_description' => isset($r->twitter_description) ? (string) $r->twitter_description : null,
+                    'twitter_image' => isset($r->twitter_image) ? (string) $r->twitter_image : null,
+                ];
+            }
+        }
+
+        if ($hasPosts) {
+            $rows = DB::table('tp_seo_posts')->orderBy('post_id')->get();
+            foreach ($rows as $r) {
+                $posts[] = [
+                    'post_id' => (int) ($r->post_id ?? 0),
+                    'title' => isset($r->title) ? (string) $r->title : null,
+                    'description' => isset($r->description) ? (string) $r->description : null,
+                    'canonical_url' => isset($r->canonical_url) ? (string) $r->canonical_url : null,
+                    'robots' => isset($r->robots) ? (string) $r->robots : null,
+                    'og_title' => isset($r->og_title) ? (string) $r->og_title : null,
+                    'og_description' => isset($r->og_description) ? (string) $r->og_description : null,
+                    'og_image' => isset($r->og_image) ? (string) $r->og_image : null,
+                    'twitter_title' => isset($r->twitter_title) ? (string) $r->twitter_title : null,
+                    'twitter_description' => isset($r->twitter_description) ? (string) $r->twitter_description : null,
+                    'twitter_image' => isset($r->twitter_image) ? (string) $r->twitter_image : null,
+                ];
+            }
         }
 
         return [
-            'count' => count($items),
-            'items' => $items,
+            'pages' => [
+                'count' => count($pages),
+                'items' => $pages,
+            ],
+            'posts' => [
+                'count' => count($posts),
+                'items' => $posts,
+            ],
         ];
     }
 
