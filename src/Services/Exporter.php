@@ -11,12 +11,17 @@ use TentaPress\Media\Models\TpMedia;
 use TentaPress\Pages\Models\TpPage;
 use TentaPress\Posts\Models\TpPost;
 use TentaPress\System\Plugin\PluginManager;
+use TentaPress\System\Support\JsonPayload;
 use TentaPress\System\Support\Paths;
 use TentaPress\System\Theme\ThemeManager;
 use ZipArchive;
 
 final class Exporter
 {
+    public function __construct(private readonly JsonPayload $jsonPayload)
+    {
+    }
+
     /**
      * @param array{
      *   include_settings?:bool,
@@ -70,42 +75,42 @@ final class Exporter
 
         // Always export pages
         $pages = $this->exportPages();
-        $zip->addFromString('pages.json', $this->json($pages));
+        $zip->addFromString('pages.json', $this->jsonPayload->encode($pages));
 
         if ($includePosts) {
             $posts = $this->exportPosts();
-            $zip->addFromString('posts.json', $this->json($posts));
+            $zip->addFromString('posts.json', $this->jsonPayload->encode($posts));
         }
 
         if ($includeMedia) {
             $media = $this->exportMedia();
-            $zip->addFromString('media.json', $this->json($media));
+            $zip->addFromString('media.json', $this->jsonPayload->encode($media));
         }
 
         if ($includeSettings) {
             $settings = $this->exportSettings();
-            $zip->addFromString('settings.json', $this->json($settings));
+            $zip->addFromString('settings.json', $this->jsonPayload->encode($settings));
         }
 
         if ($includeTheme) {
             $theme = $this->exportTheme();
-            $zip->addFromString('theme.json', $this->json($theme));
+            $zip->addFromString('theme.json', $this->jsonPayload->encode($theme));
         }
 
         if ($includePlugins) {
             $plugins = $this->exportPlugins();
-            $zip->addFromString('plugins.json', $this->json($plugins));
+            $zip->addFromString('plugins.json', $this->jsonPayload->encode($plugins));
         }
 
         if ($includeSeo) {
             $seo = $this->exportSeo();
             if ($seo !== null) {
                 $manifest['includes']['seo'] = true;
-                $zip->addFromString('seo.json', $this->json($seo));
+                $zip->addFromString('seo.json', $this->jsonPayload->encode($seo));
             }
         }
 
-        $zip->addFromString('manifest.json', $this->json($manifest));
+        $zip->addFromString('manifest.json', $this->jsonPayload->encode($manifest));
 
         $zip->close();
 
@@ -468,11 +473,4 @@ final class Exporter
         ];
     }
 
-    /**
-     * @param mixed $data
-     */
-    private function json(mixed $data): string
-    {
-        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
-    }
 }
