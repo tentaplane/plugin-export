@@ -1,0 +1,17 @@
+{
+    "id": "tentapress/export",
+    "name": "Export",
+    "version": "0.1.2",
+    "provider": "TentaPress\\Export\\ExportServiceProvider",
+    "admin": {
+        "menus": [
+            {
+                "label": "Export",
+                "route": "tp.export.index",
+                "capability": "export_site",
+                "position": 30,
+                "parent": "Settings"
+            }
+        ]
+    }
+}
