@@ -1,18 +1,35 @@
 # Export
 
-TentaPress plugin.
+Content export functionality for TentaPress.
 
-## Plugin details
+## Plugin Details
 
-- ID: `tentapress/export`
-- Version: `0.1.2`
-- Service provider: `TentaPress\Export\ExportServiceProvider`
+| Field | Value |
+|-------|-------|
+| ID | `tentapress/export` |
+| Version | 0.1.2 |
+| Provider | `TentaPress\Export\ExportServiceProvider` |
 
-## Requirements
+## Features
+
+- Export site content to JSON format
+- Includes pages, posts, media references, settings
+
+## Dependencies
 
 None.
 
+## Admin Menu
+
+| Label | Route | Capability | Parent |
+|-------|-------|------------|--------|
+| Export | `tp.export.index` | `export_site` | Settings |
+
 ## Development
 
-- Sync plugins: `php artisan tp:plugins sync`
-- Enable plugin: `php artisan tp:plugins enable tentapress/export`
+```bash
+php artisan tp:plugins sync
+php artisan tp:plugins enable tentapress/export
+```
+
+**Note:** This is an optional plugin. Not enabled by default.
