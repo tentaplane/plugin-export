@@ -381,9 +381,12 @@ final class Exporter
             if (is_file($cachePath)) {
                 $cache = require $cachePath;
 
-                if (is_array($cache) && isset($cache['enabled']) && is_array($cache['enabled'])) {
-                    $out['enabled'] = array_values(array_map(strval(...), $cache['enabled']));
-                    return $out;
+                if (is_array($cache)) {
+                    $enabled = $this->extractEnabledPluginIds($cache);
+                    if ($enabled !== []) {
+                        $out['enabled'] = $enabled;
+                        return $out;
+                    }
                 }
             }
         }
@@ -404,6 +407,74 @@ final class Exporter
         }
 
         return $out;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private function extractEnabledPluginIds(array $cache): array
+    {
+        if (isset($cache['enabled']) && is_array($cache['enabled'])) {
+            return array_values(array_filter(array_map(strval(...), $cache['enabled'])));
+        }
+
+        $plugins = null;
+
+        if (isset($cache['plugins']) && is_array($cache['plugins'])) {
+            $plugins = $cache['plugins'];
+        } elseif (isset($cache['discovered']) && is_array($cache['discovered'])) {
+            $plugins = $cache['discovered'];
+        } elseif (isset($cache['items']) && is_array($cache['items'])) {
+            $plugins = $cache['items'];
+        } elseif ($this->looksLikePluginList($cache)) {
+            $plugins = $cache;
+        }
+
+        if (!is_array($plugins) || $plugins === []) {
+            return [];
+        }
+
+        $keys = array_keys($plugins);
+        $allKeysAreStrings = $keys !== [] && count(array_filter($keys, 'is_string')) === count($keys);
+
+        if ($allKeysAreStrings) {
+            return array_values(array_map(strval(...), $keys));
+        }
+
+        $ids = [];
+        foreach ($plugins as $plugin) {
+            if (!is_array($plugin)) {
+                continue;
+            }
+
+            $id = $plugin['id'] ?? null;
+            if (!is_string($id) || $id === '') {
+                continue;
+            }
+
+            $ids[] = $id;
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function looksLikePluginList(array $cache): bool
+    {
+        if ($cache === []) {
+            return false;
+        }
+
+        foreach ($cache as $item) {
+            if (!is_array($item)) {
+                return false;
+            }
+
+            if (!array_key_exists('id', $item)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

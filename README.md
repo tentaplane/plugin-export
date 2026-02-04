@@ -4,10 +4,10 @@ Content export functionality for TentaPress.
 
 ## Plugin Details
 
-| Field | Value |
-|-------|-------|
-| ID | `tentapress/export` |
-| Version | 0.1.2 |
+| Field    | Value                                     |
+|----------|-------------------------------------------|
+| ID       | `tentapress/export`                       |
+| Version  | 0.1.3                                     |
 | Provider | `TentaPress\Export\ExportServiceProvider` |
 
 ## Features
@@ -21,8 +21,8 @@ None.
 
 ## Admin Menu
 
-| Label | Route | Capability | Parent |
-|-------|-------|------------|--------|
+| Label  | Route             | Capability    | Parent   |
+|--------|-------------------|---------------|----------|
 | Export | `tp.export.index` | `export_site` | Settings |
 
 ## Development
