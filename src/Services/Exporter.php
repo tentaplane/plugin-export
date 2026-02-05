@@ -16,9 +16,9 @@ use TentaPress\System\Support\Paths;
 use TentaPress\System\Theme\ThemeManager;
 use ZipArchive;
 
-final class Exporter
+final readonly class Exporter
 {
-    public function __construct(private readonly JsonPayload $jsonPayload)
+    public function __construct(private JsonPayload $jsonPayload)
     {
     }
 
@@ -435,7 +435,7 @@ final class Exporter
         }
 
         $keys = array_keys($plugins);
-        $allKeysAreStrings = $keys !== [] && count(array_filter($keys, 'is_string')) === count($keys);
+        $allKeysAreStrings = $keys !== [] && count(array_filter($keys, is_string(...))) === count($keys);
 
         if ($allKeysAreStrings) {
             return array_values(array_map(strval(...), $keys));
