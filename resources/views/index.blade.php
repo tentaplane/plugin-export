@@ -7,13 +7,13 @@
         <div>
             <h1 class="tp-page-title">Export</h1>
             <p class="tp-description">
-                Export content and configuration to a zip bundle for another TentaPress installation.
+                Create an export file you can import into another TentaPress site.
             </p>
         </div>
     </div>
 
     <div class="tp-metabox">
-        <div class="tp-metabox__title">Export bundle</div>
+        <div class="tp-metabox__title">Export file</div>
         <div class="tp-metabox__body space-y-5">
             <form method="POST" action="{{ route('tp.export.run') }}" class="space-y-4">
                 @csrf
@@ -24,9 +24,7 @@
                         <span class="text-sm">
                             <span class="font-semibold">Include settings</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports rows from
-                                <code class="tp-code">tp_settings</code>
-                                .
+                                Include your site settings.
                             </span>
                         </span>
                     </label>
@@ -36,9 +34,7 @@
                         <span class="text-sm">
                             <span class="font-semibold">Include posts</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports rows from
-                                <code class="tp-code">tp_posts</code>
-                                .
+                                Include your posts.
                             </span>
                         </span>
                     </label>
@@ -48,9 +44,7 @@
                         <span class="text-sm">
                             <span class="font-semibold">Include media</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports rows from
-                                <code class="tp-code">tp_media</code>
-                                (metadata only).
+                                Include media details. Files are not included.
                             </span>
                         </span>
                     </label>
@@ -58,9 +52,9 @@
                     <label class="flex items-center gap-3">
                         <input type="checkbox" class="tp-checkbox" name="include_theme" value="1" checked />
                         <span class="text-sm">
-                            <span class="font-semibold">Include theme metadata</span>
+                            <span class="font-semibold">Include theme details</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports active theme ID (if available) and discovered layouts (if available).
+                                Include the active theme and any available layouts.
                             </span>
                         </span>
                     </label>
@@ -68,9 +62,9 @@
                     <label class="flex items-center gap-3">
                         <input type="checkbox" class="tp-checkbox" name="include_plugins" value="1" checked />
                         <span class="text-sm">
-                            <span class="font-semibold">Include enabled plugins list</span>
+                            <span class="font-semibold">Include enabled plugins</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports enabled plugin IDs from the plugin cache (when available).
+                                Include a list of plugins currently enabled on this site.
                             </span>
                         </span>
                     </label>
@@ -80,22 +74,18 @@
                         <span class="text-sm">
                             <span class="font-semibold">Include SEO data</span>
                             <span class="tp-muted mt-1 block text-xs">
-                                Exports
-                                <code class="tp-code">tp_seo_pages</code>
-                                and
-                                <code class="tp-code">tp_seo_posts</code>
-                                if present. Safe to leave on.
+                                Include SEO titles, descriptions, and social sharing settings when available.
                             </span>
                         </span>
                     </label>
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="tp-button-primary">Generate export zip</button>
+                    <button type="submit" class="tp-button-primary">Create export file</button>
                 </div>
 
                 <div class="tp-muted text-xs">
-                    The download will begin immediately. No export history is stored in the database.
+                    Your download starts right away. Export history is not saved.
                 </div>
             </form>
 
