@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "app": {
+    "name": "TentaPress"
+  },
+  "includes": {
+    "pages": true,
+    "posts": false,
+    "media": false,
+    "settings": false,
+    "theme": false,
+    "plugins": false,
+    "seo": false
+  }
+}
