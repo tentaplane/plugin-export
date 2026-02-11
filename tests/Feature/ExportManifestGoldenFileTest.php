@@ -14,7 +14,7 @@ it('matches the golden manifest and file list for minimal export options', funct
 
     File::deleteDirectory(storage_path('app/tp-exports'));
 
-    $result = app(Exporter::class)->createExportZip([
+    $result = resolve(Exporter::class)->createExportZip([
         'include_settings' => false,
         'include_theme' => false,
         'include_plugins' => false,
