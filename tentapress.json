@@ -1,7 +1,7 @@
 {
     "id": "tentapress/export",
     "name": "Export",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "provider": "TentaPress\\Export\\ExportServiceProvider",
     "admin": {
         "menus": [

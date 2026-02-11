@@ -7,7 +7,7 @@ Content export functionality for TentaPress.
 | Field    | Value                                     |
 |----------|-------------------------------------------|
 | ID       | `tentapress/export`                       |
-| Version  | 0.1.5                                     |
+| Version  | 0.1.6                                     |
 | Provider | `TentaPress\Export\ExportServiceProvider` |
 
 ## Features
