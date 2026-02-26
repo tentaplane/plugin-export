@@ -5,6 +5,18 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\File;
 use TentaPress\Export\Services\Exporter;
 
+function exportArtifactsDirForManifestTest(): string
+{
+    $base = 'tp-exports';
+    $token = (string) getenv('TEST_TOKEN');
+
+    if ($token !== '') {
+        $base .= '-' . $token;
+    }
+
+    return storage_path('app/' . $base);
+}
+
 it('matches the golden manifest and file list for minimal export options', function (): void {
     $expectedManifestPath = __DIR__.'/../Fixtures/minimal-export-manifest.json';
     $expectedFilesPath = __DIR__.'/../Fixtures/minimal-export-file-list.json';
@@ -12,7 +24,7 @@ it('matches the golden manifest and file list for minimal export options', funct
     $expectedManifest = json_decode((string) file_get_contents($expectedManifestPath), true, 512, JSON_THROW_ON_ERROR);
     $expectedFiles = json_decode((string) file_get_contents($expectedFilesPath), true, 512, JSON_THROW_ON_ERROR);
 
-    File::deleteDirectory(storage_path('app/tp-exports'));
+    File::deleteDirectory(exportArtifactsDirForManifestTest());
 
     $result = resolve(Exporter::class)->createExportZip([
         'include_settings' => false,

@@ -6,6 +6,18 @@ use Illuminate\Support\Facades\File;
 use TentaPress\Export\ExportServiceProvider;
 use TentaPress\Users\Models\TpUser;
 
+function exportArtifactsDir(): string
+{
+    $base = 'tp-exports';
+    $token = (string) getenv('TEST_TOKEN');
+
+    if ($token !== '') {
+        $base .= '-' . $token;
+    }
+
+    return storage_path('app/' . $base);
+}
+
 function registerExportProviderForEdgeCases(): void
 {
     app()->register(ExportServiceProvider::class);
@@ -34,7 +46,7 @@ it('denies export access to non-super-admin users', function (): void {
 
 it('validates export options as booleans and does not create an export on failure', function (): void {
     registerExportProviderForEdgeCases();
-    File::deleteDirectory(storage_path('app/tp-exports'));
+    File::deleteDirectory(exportArtifactsDir());
 
     $admin = TpUser::query()->create([
         'name' => 'Export Admin',
@@ -63,6 +75,6 @@ it('validates export options as booleans and does not create an export on failur
             'include_media',
         ]);
 
-    $exportDir = storage_path('app/tp-exports');
+    $exportDir = exportArtifactsDir();
     expect(is_dir($exportDir))->toBeFalse();
 });

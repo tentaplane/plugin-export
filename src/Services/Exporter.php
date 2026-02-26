@@ -46,7 +46,7 @@ final readonly class Exporter
         $timestamp = gmdate('Ymd-His');
         $filename = "tentapress-export-{$timestamp}.zip";
 
-        $dir = storage_path('app/tp-exports');
+        $dir = $this->exportsDirectory();
         File::ensureDirectoryExists($dir);
 
         $zipPath = $dir . DIRECTORY_SEPARATOR . $filename;
@@ -118,6 +118,18 @@ final readonly class Exporter
             'path' => $zipPath,
             'filename' => $filename,
         ];
+    }
+
+    private function exportsDirectory(): string
+    {
+        $base = 'tp-exports';
+        $token = (string) getenv('TEST_TOKEN');
+
+        if (app()->runningUnitTests() && $token !== '') {
+            $base .= '-' . $token;
+        }
+
+        return storage_path('app/' . $base);
     }
 
     /**
